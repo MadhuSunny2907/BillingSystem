@@ -4,3 +4,4 @@ Flask-Session
 gspread
 oauth2client
 reportlab
+fpdf
