@@ -10,16 +10,19 @@ from itertools import zip_longest
 app = Flask(__name__)
 
 # ---------------- Google Sheets setup ----------------
-CREDS_FILE = "client_secret.json"
+sa_json = os.getenv("SERVICE_ACCOUNT_JSON")
+with open("/tmp/service_account.json", "w") as f:
+    f.write(sa_json)
 SPREADSHEET_NAME = "BillingSystem"
 INVOICES_WS = "Invoices"
 ITEMS_WS = "Invoice_Items"
 PRODUCTS_WS = "Items_Sheet"
 
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name("/tmp/service_account.json", scope)
 client = gspread.authorize(creds)
 
+SPREADSHEET_NAME = os.getenv("SPREADSHEET_NAME", "BillingSystem")
 ss = client.open(SPREADSHEET_NAME)
 invoices_sheet = ss.worksheet(INVOICES_WS)
 items_sheet = ss.worksheet(ITEMS_WS)
