@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LAXMI uPVC Billing</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { background-color: #e9ecef; font-family: 'Poppins', sans-serif; }
+.container { margin-top: 40px; margin-bottom: 40px; background: #fff; padding: 30px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 900px; }
+h2 { text-align: center; font-weight: 700; color: #fff; background: linear-gradient(90deg, #007bff, #0056b3); padding: 15px; border-radius: 25px; margin-bottom: 10px; }
+h5 { text-align: center; font-weight: 600; color: #343a40; margin-bottom: 20px; }
+.add-item-btn { font-size: 0.8rem; padding: 4px 10px; }
+.card { border: none; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+.card-header { background-color: #f1f3f5; border-bottom: 1px solid #dee2e6; font-weight: 500; color: #495057; }
+.nav-tabs { border-bottom: 2px solid #007bff; }
+.nav-tabs .nav-link { border: 1px solid transparent; border-bottom: none; color: #495057; }
+.nav-tabs .nav-link.active { background-color: #007bff; color: #fff; border-color: #007bff; border-radius: 5px 5px 0 0; }
+.form-control, .form-select { border-radius: 8px; }
+.btn-primary { background-color: #007bff; border-color: #007bff; border-radius: 8px; transition: all 0.3s ease; }
+.btn-primary:hover { background-color: #0056b3; border-color: #0056b3; }
+.btn-success { background-color: #28a745; border-color: #28a745; }
+.btn-success:hover { background-color: #218838; border-color: #1e7e34; }
+.btn-info { background-color: #17a2b8; border-color: #17a2b8; border-radius: 8px; }
+.btn-info:hover { background-color: #138496; border-color: #117a8b; }
+.table thead th { background-color: #e9ecef; color: #495057; }
+.form-group-hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+<h2>LAXMI uPVC</h2>
+<h5>Bellampalli, Telangana</h5>
+
+<ul class="nav nav-tabs mt-4" id="invoiceTabs" role="tablist">
+  <li class="nav-item">
+    <button class="nav-link active" id="new-tab" data-bs-toggle="tab" data-bs-target="#new" type="button">✨ New Invoice</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" id="update-tab" data-bs-toggle="tab" data-bs-target="#update" type="button">🔄 Update Invoice</button>
+  </li>
+</ul>
+
+<div class="tab-content mt-4">
+  <div class="tab-pane fade show active" id="new">
+    <form method="POST" action="/save_invoice" id="newInvoiceForm">
+      <div class="card">
+        <div class="card-header">Customer Details</div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-4"><label class="form-label">Customer Name</label><input type="text" name="customer" class="form-control" required></div>
+            <div class="col-md-4"><label class="form-label">Mobile</label><input type="text" name="mobile" class="form-control" required></div>
+            <div class="col-md-4"><label class="form-label">City</label><input type="text" name="city" class="form-control"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Invoice Items</div>
+        <div class="card-body">
+          <table class="table table-bordered" id="itemsTable">
+            <thead class="table-light">
+              <tr>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Amount</th>
+                <th>Total</th>
+                <th><button type="button" class="btn btn-sm btn-success add-item-btn" onclick="addItemRow()">+ Add</button></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><select name="item[]" class="form-select itemDropdown" onchange="updateAmount(this)"></select></td>
+                <td><input type="number" name="quantity[]" class="form-control quantityInput" value="1" min="1" onchange="updateTotal(this)"></td>
+                <td><input type="number" name="amount[]" class="form-control amountInput" value="0" step="0.01" readonly></td>
+                <td><input type="number" name="total[]" class="form-control totalInput" value="0" step="0.01" readonly></td>
+				<td><button type="button" class="btn btn-danger btn-sm delete-row-btn">🗑️</button></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Payment Details</div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-4"><label class="form-label">Total Amount</label><input type="number" name="total_amount" class="form-control" value="0.00" step="0.01" readonly></div>
+            <div class="col-md-4"><label class="form-label">Amount Paid</label><input type="number" name="amount_paid" class="form-control" value="0.00" step="0.01" onchange="recalcGrandTotal(this.form)"></div>
+            <div class="col-md-4"><label class="form-label">Balance</label><input type="number" name="balance" class="form-control" value="0.00" step="0.01" readonly></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <button type="button" class="btn btn-secondary" onclick="resetNewInvoice()">+ New Invoice</button>
+        <button type="submit" class="btn btn-primary" id="saveNewBtn">💾 Save Invoice</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="tab-pane fade" id="update">
+    <form method="POST" action="/update_invoice" id="updateInvoiceForm">
+      <div class="card">
+        <div class="card-header">Fetch Invoice Details</div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-5"><label class="form-label">Invoice Number</label><input type="text" name="invoice_no" id="updateInvoiceNo" class="form-control" placeholder="Enter Invoice Number"></div>
+            <div class="col-md-2 text-center fw-bold pt-4"><span>— or —</span></div>
+            <div class="col-md-5"><label class="form-label">Mobile Number</label><input type="text" name="mobile_search" id="updateMobileSearch" class="form-control" placeholder="Enter Mobile Number"></div>
+          </div>
+          <button type="button" class="btn btn-info w-100" onclick="fetchInvoiceData()">🔍 Fetch Invoice</button>
+        </div>
+      </div>
+
+      <div id="update-details-section" class="form-group-hidden">
+        <div class="card">
+          <div class="card-header">Customer Details</div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-4"><label class="form-label">Customer Name</label><input type="text" name="customer" id="updateCustomer" class="form-control"></div>
+              <div class="col-md-4"><label class="form-label">Mobile</label><input type="text" name="mobile" id="updateMobile" class="form-control"></div>
+              <div class="col-md-4"><label class="form-label">City</label><input type="text" name="city" id="updateCity" class="form-control"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Invoice Items</div>
+          <div class="card-body">
+            <table class="table table-bordered" id="updateItemsTable">
+              <thead class="table-light">
+                <tr>
+                  <th>Item</th>
+                  <th>Quantity</th>
+                  <th>Amount</th>
+                  <th>Total</th>
+                  <th><button type="button" class="btn btn-sm btn-success add-item-btn" onclick="addUpdateItemRow()">+ Add</button></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Payment Details</div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-4"><label class="form-label">Total Amount</label><input type="number" name="total_amount" id="updateTotal" class="form-control" step="0.01" readonly></div>
+              <div class="col-md-4"><label class="form-label">Amount Paid</label><input type="number" name="amount_paid" id="updatePaid" class="form-control" step="0.01" onchange="recalcGrandTotal(this.form)"></div>
+              <div class="col-md-4"><label class="form-label">Balance</label><input type="number" name="balance" id="updateBalance" class="form-control" step="0.01" readonly></div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block mt-3" id="updateBtn">💾 Update Invoice</button>
+      </div>
+    </form>
+  </div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Global products data to avoid multiple API calls
+let itemsData = [];
+
+// Load items from server and populate dropdowns
+async function loadItems() {
+    try {
+        const res = await fetch("/get_items");
+        itemsData = await res.json();
+        document.querySelectorAll(".itemDropdown").forEach(sel => populateDropdown(sel));
+    } catch (error) {
+        console.error("Failed to load items:", error);
+    }
+}
+
+function populateDropdown(sel) {
+    sel.innerHTML = "";
+    itemsData.forEach(it => {
+        const opt = document.createElement("option");
+        opt.value = it.Item_Name;
+        opt.textContent = it.Item_Name;
+        sel.appendChild(opt);
+    });
+    // Set a default selected value if the dropdown is for a new row
+    if (sel.closest("form").id === "newInvoiceForm") {
+        sel.selectedIndex = -1;
+    }
+}
+
+// Update amount and row total when an item is selected
+function updateAmount(selectElem) {
+    const row = selectElem.closest("tr");
+    const qtyInput = row.querySelector(".quantityInput");
+    const amountInput = row.querySelector(".amountInput");
+    const totalInput = row.querySelector(".totalInput");
+
+    const product = itemsData.find(p => p.Item_Name === selectElem.value);
+    const price = product ? parseFloat(product.Price) : 0;
+
+    amountInput.value = price.toFixed(2);
+    const qty = parseFloat(qtyInput.value) || 0;
+    totalInput.value = (qty * price).toFixed(2);
+
+    recalcGrandTotal(selectElem.closest("form"));
+}
+
+// Update total on quantity change
+function updateTotal(qtyInput) {
+    const row = qtyInput.closest("tr");
+    const amountInput = row.querySelector(".amountInput");
+    const totalInput = row.querySelector(".totalInput");
+
+    const qty = parseFloat(qtyInput.value) || 0;
+    const amount = parseFloat(amountInput.value) || 0;
+    totalInput.value = (qty * amount).toFixed(2);
+
+    recalcGrandTotal(qtyInput.closest("form"));
+}
+
+// Recalculate grand total and balance
+function recalcGrandTotal(form) {
+    let total = 0;
+    form.querySelectorAll(".totalInput").forEach(inp => {
+        total += parseFloat(inp.value) || 0;
+    });
+
+    const totalField = form.querySelector("input[name='total_amount']") || document.getElementById("updateTotal");
+    const paidField = form.querySelector("input[name='amount_paid']") || document.getElementById("updatePaid");
+    const balanceField = form.querySelector("input[name='balance']") || document.getElementById("updateBalance");
+
+    totalField.value = total.toFixed(2);
+    const paid = parseFloat(paidField.value) || 0;
+    balanceField.value = (total - paid).toFixed(2);
+}
+
+// Add new row for New Invoice tab
+function addItemRow() {
+    const tbody = document.querySelector("#itemsTable tbody");
+    const newRow = document.createElement("tr");
+    newRow.innerHTML = `
+        <td><select name="item[]" class="form-select itemDropdown" onchange="updateAmount(this)"></select></td>
+        <td><input type="number" name="quantity[]" class="form-control quantityInput" value="1" min="1" onchange="updateTotal(this)"></td>
+        <td><input type="number" name="amount[]" class="form-control amountInput" value="0" step="0.01" readonly></td>
+        <td><input type="number" name="total[]" class="form-control totalInput" value="0" step="0.01" readonly></td>
+        <td><button type="button" class="btn btn-danger btn-sm delete-row-btn">🗑️</button></td>
+    `;
+    tbody.appendChild(newRow);
+    populateDropdown(newRow.querySelector(".itemDropdown"));
+}
+
+// Add new row for Update Invoice tab
+function addUpdateItemRow() {
+    const tbody = document.querySelector("#updateItemsTable tbody");
+    const newRow = document.createElement("tr");
+    newRow.innerHTML = `
+        <td><select name="item[]" class="form-select itemDropdown" onchange="updateAmount(this)"></select></td>
+        <td><input type="number" name="quantity[]" class="form-control quantityInput" value="1" min="1" onchange="updateTotal(this)"></td>
+        <td><input type="number" name="amount[]" class="form-control amountInput" value="0" step="0.01" readonly></td>
+        <td><input type="number" name="total[]" class="form-control totalInput" value="0" step="0.01" readonly></td>
+        <td><button type="button" class="btn btn-danger btn-sm delete-row-btn">🗑️</button></td>
+    `;
+    tbody.appendChild(newRow);
+    populateDropdown(newRow.querySelector(".itemDropdown"));
+}
+
+// Reset new invoice
+function resetNewInvoice() {
+    const form = document.getElementById("newInvoiceForm");
+    form.reset();
+    const tbody = document.querySelector("#itemsTable tbody");
+    tbody.innerHTML = "";
+    addItemRow();
+    recalcGrandTotal(form);
+}
+
+// Fetch invoice for update tab
+async function fetchInvoiceData() {
+    const invoiceNo = document.getElementById("updateInvoiceNo").value.trim();
+    const mobileSearch = document.getElementById("updateMobileSearch").value.trim();
+    
+    if (!invoiceNo && !mobileSearch) { alert("Please enter invoice number or mobile."); return; }
+
+    try {
+        const res = await fetch(`/fetch_invoice?invoice_no=${invoiceNo}&mobile=${mobileSearch}`);
+        const data = await res.json();
+        if (data.error) { alert(data.error); document.getElementById("update-details-section").classList.add("form-group-hidden"); return; }
+
+        document.getElementById("update-details-section").classList.remove("form-group-hidden");
+        document.getElementById("updateCustomer").value = data.customer;
+        document.getElementById("updateMobile").value = data.mobile;
+        document.getElementById("updateCity").value = data.city;
+        document.getElementById("updatePaid").value = data.amount_paid;
+
+        const tbody = document.querySelector("#updateItemsTable tbody");
+        tbody.innerHTML = "";
+        
+        await loadItems();
+        
+        data.items.forEach(it => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td><select name="item[]" class="form-select itemDropdown" onchange="updateAmount(this)"></select></td>
+                <td><input type="number" name="quantity[]" class="form-control quantityInput" value="${it.quantity}" min="1" onchange="updateTotal(this)"></td>
+                <td><input type="number" name="amount[]" class="form-control amountInput" value="${it.amount}" step="0.01" readonly></td>
+                <td><input type="number" name="total[]" class="form-control totalInput" value="${it.quantity * it.amount}" step="0.01" readonly></td>
+                <td><button type="button" class="btn btn-danger btn-sm delete-row-btn">🗑️</button></td>
+            `;
+            tbody.appendChild(row);
+            const selectElem = row.querySelector(".itemDropdown");
+            populateDropdown(selectElem);
+            selectElem.value = it.item;
+        });
+        recalcGrandTotal(document.getElementById("updateInvoiceForm"));
+
+    } catch (err) { alert("Error fetching invoice."); console.error(err); }
+}
+
+// Delete row button functionality
+document.addEventListener("click", e => {
+    if (e.target.classList.contains("delete-row-btn")) {
+        const tbody = e.target.closest("tbody");
+        const form = e.target.closest("form");
+        if (tbody.rows.length > 1) {
+            e.target.closest("tr").remove();
+            recalcGrandTotal(form);
+        } else {
+            alert("At least one item is required.");
+        }
+    }
+});
+
+// Event listeners for input changes
+document.addEventListener("input", e => {
+    if (e.target.name === "amount_paid") {
+        recalcGrandTotal(e.target.closest("form"));
+    }
+});
+
+// Initial load
+window.onload = loadItems;
+</script>
+</body>
+</html>

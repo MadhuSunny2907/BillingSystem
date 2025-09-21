@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Update Invoice</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container mt-4">
+    <h3>Update Invoice {{ record['Invoice No'] }}</h3>
+    <form method="POST" action="/update_invoice">
+      <input type="hidden" name="invoice_no" value="{{ record['Invoice No'] }}">
+
+      <div class="mb-3">
+        <label>Customer</label>
+        <input type="text" name="customer" class="form-control" value="{{ record['Customer'] }}" required>
+      </div>
+      <div class="mb-3">
+        <label>City</label>
+        <input type="text" name="city" class="form-control" value="{{ record['City'] }}" required>
+      </div>
+      <div class="mb-3">
+        <label>Items</label>
+        <input type="text" name="item[]" class="form-control" value="{{ record['Items'] }}">
+      </div>
+      <div class="mb-3">
+        <label>Quantities</label>
+        <input type="text" name="quantity[]" class="form-control" value="{{ record['Quantities'] }}">
+      </div>
+      <div class="mb-3">
+        <label>Amounts</label>
+        <input type="text" name="amount[]" class="form-control" value="{{ record['Amounts'] }}">
+      </div>
+      <div class="row">
+        <div class="col">
+          <label>Total Amount</label>
+          <input type="text" name="total_amount" class="form-control" value="{{ record['Total Amount'] }}">
+        </div>
+        <div class="col">
+          <label>Amount Paid</label>
+          <input type="text" name="amount_paid" class="form-control" value="{{ record['Amount Paid'] }}">
+        </div>
+        <div class="col">
+          <label>Balance</label>
+          <input type="text" name="balance" class="form-control" value="{{ record['Balance'] }}">
+        </div>
+      </div>
+
+      <button class="btn btn-primary mt-3" type="submit">💾 Update Invoice</button>
+    </form>
+  </div>
+</body>
+</html>

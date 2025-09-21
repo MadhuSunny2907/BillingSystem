@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Laxmi uPVC Billing</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background: #f5f7fa; }
+        h1 { color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        th { background: #3498db; color: white; }
+        .btn { padding: 8px 12px; border: none; cursor: pointer; border-radius: 5px; }
+        .btn-add { background: #2ecc71; color: white; font-size: 14px; }
+        .btn-submit { background: #e67e22; color: white; font-size: 16px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🧾 Laxmi uPVC Invoice</h1>
+    <form action="/submit" method="POST" onsubmit="return disableSubmit(this);">
+        
+        <label>Customer Name:</label>
+        <input type="text" name="customer_name" required><br><br>
+        
+        <label>Mobile:</label>
+        <input type="text" name="mobile" required><br><br>
+        
+        <label>City:</label>
+        <input type="text" name="city" required><br><br>
+
+        <table id="itemsTable">
+            <tr>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Amount</th>
+            </tr>
+            <tr>
+                <td>
+                    <select name="item[]">
+                        <option>Apple</option>
+                        <option>Samsung</option>
+                        <option>Redmi</option>
+                        <option>OnePlus</option>
+                    </select>
+                </td>
+                <td><input type="number" name="qty[]" min="1" value="1" oninput="updateTotals()"></td>
+                <td><input type="number" name="amount[]" min="0" value="0" oninput="updateTotals()"></td>
+            </tr>
+        </table>
+        <br>
+        <button type="button" class="btn btn-add" onclick="addRow()">➕ Add Item</button>
+        <br><br>
+
+        <label>Total Amount:</label>
+        <input type="number" name="total_amount" readonly><br><br>
+
+        <label>Amount Paid:</label>
+        <input type="number" name="amount_paid" min="0" required oninput="updateTotals()"><br><br>
+
+        <label>Balance:</label>
+        <input type="number" name="balance" readonly><br><br>
+
+        <button type="submit" class="btn btn-submit">💾 Save Invoice</button>
+    </form>
+
+    <script>
+        function addRow() {
+            let table = document.getElementById("itemsTable");
+            let row = table.insertRow(-1);
+            row.innerHTML = `
+                <td>
+                    <select name="item[]">
+                        <option>Apple</option>
+                        <option>Samsung</option>
+                        <option>Redmi</option>
+                        <option>OnePlus</option>
+                    </select>
+                </td>
+                <td><input type="number" name="qty[]" min="1" value="1" oninput="updateTotals()"></td>
+                <td><input type="number" name="amount[]" min="0" value="0" oninput="updateTotals()"></td>
+            `;
+        }
+
+        function updateTotals() {
+            let qtys = document.getElementsByName("qty[]");
+            let amounts = document.getElementsByName("amount[]");
+            let total = 0;
+            for (let i = 0; i < qtys.length; i++) {
+                let q = parseFloat(qtys[i].value) || 0;
+                let a = parseFloat(amounts[i].value) || 0;
+                total += (q * a);
+            }
+            document.getElementsByName("total_amount")[0].value = total;
+
+            let paid = parseFloat(document.getElementsByName("amount_paid")[0].value) || 0;
+            document.getElementsByName("balance")[0].value = total - paid;
+        }
+
+        function disableSubmit(form) {
+            form.querySelector(".btn-submit").disabled = true;
+            return true;
+        }
+    </script>
+</body>
+</html>

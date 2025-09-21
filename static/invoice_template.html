@@ -1,0 +1,23 @@
+<h2 style="text-align:center;">LAXMI uPVC - Invoice</h2>
+<p><b>Invoice No:</b> {invoice_no} &nbsp;&nbsp; <b>Date:</b> {date}</p>
+<p><b>Customer:</b> {customer} <br>
+<b>Mobile:</b> {mobile} <br>
+<b>City:</b> {city}</p>
+
+<table border="1" width="100%" cellspacing="0" cellpadding="5">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Qty</th>
+      <th>Rate</th>
+      <th>Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {items_table}
+  </tbody>
+</table>
+
+<p><b>Total:</b> ₹{total_amount}</p>
+<p><b>Paid:</b> ₹{amount_paid}</p>
+<p><b>Balance:</b> ₹{balance}</p>
