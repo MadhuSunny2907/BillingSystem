@@ -1,4 +1,6 @@
 Flask
+gunicorn
+Flask-Session
 gspread
 oauth2client
-fpdf
+reportlab
